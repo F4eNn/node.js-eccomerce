@@ -23,14 +23,17 @@ const error = require('./controllers/error')
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(express.static(path.join(__dirname, 'public')))
 
+
 app.use('/admin', adminRoutes)
 app.use(shopRoutes)
 
 app.use(error.get404)
 
-sequelize.sync().then(result => {
-    app.listen(3000)
-
-}).catch(err => console.log(err))
-
-
+sequelize
+  .sync()
+  .then(result => {
+    app.listen(3000);
+  })
+  .catch(err => {
+    console.log(err);
+  });

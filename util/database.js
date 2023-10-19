@@ -1,6 +1,6 @@
 /** @format */
 
-const Sequelize = require('sequelize')
+const Sequelize = require('sequelize').Sequelize
 
 const sequelize = new Sequelize('node-complete', 'root', 'Seconds1!', { dialect: 'mysql', host: 'localhost' })
 
