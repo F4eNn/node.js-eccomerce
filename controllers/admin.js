@@ -14,20 +14,14 @@ exports.postAddProduct = async (req, res, next) => {
 	const imageUrl = req.body.imageUrl
 	const price = req.body.price
 	const description = req.body.description
+	const product = new Product(title, price, description, imageUrl, null, req.user._id)
 	try {
-		await req.user.createProduct({
-			title: title,
-			price: price,
-			imageUrl: imageUrl,
-			description: description,
-		})
-		console.log('Created product ')
+		await product.save()
 		res.redirect('/admin/products')
-	} catch (error) {
-		console.log(error)
+	} catch (err) {
+		console.log(err)
 	}
 }
-
 exports.getEditProduct = async (req, res, next) => {
 	const editMode = req.query.edit
 	if (!editMode) {
@@ -35,7 +29,7 @@ exports.getEditProduct = async (req, res, next) => {
 	}
 	const prodId = req.params.productId
 	try {
-		const product = await req.user.getProducts({ where: { id: prodId } })
+		const product = await Product.findById(prodId)
 		if (!product) {
 			return res.redirect('/')
 		}
@@ -56,23 +50,17 @@ exports.postEditProduct = async (req, res, next) => {
 	const updatedPrice = req.body.price
 	const updatedImageUrl = req.body.imageUrl
 	const updatedDescription = req.body.description
-
 	try {
-		const product = await Product.findByPk(prodId)
-		product.title = updatedTitle
-		product.price = updatedPrice
-		product.imageUrl = updatedImageUrl
-		product.description = updatedDescription
+		const newProduct = new Product(updatedTitle, updatedPrice, updatedDescription, updatedImageUrl, prodId)
 		res.redirect('/admin/products')
-		return await product.save()
+		return await newProduct.save()
 	} catch (error) {
 		console.log(error)
 	}
 }
-
 exports.getProducts = async (req, res, next) => {
 	try {
-		const products = await req.user.getProducts()
+		const products = await Product.fetchAll()
 		res.render('admin/products', {
 			prods: products,
 			pageTitle: 'Admin Products',
@@ -84,10 +72,8 @@ exports.getProducts = async (req, res, next) => {
 }
 exports.postDeleteProduct = async (req, res, next) => {
 	const prodId = req.body.productId
-	console.log(prodId)
 	try {
-		const product = await Product.findByPk(prodId)
-		await product.destroy()
+		await Product.deletById(prodId)
 		res.redirect('/admin/products')
 	} catch (error) {
 		console.log(error)
