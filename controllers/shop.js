@@ -10,6 +10,7 @@ exports.getProducts = async (req, res, next) => {
 			prods: products,
 			pageTitle: 'All Products',
 			path: '/products',
+			isAuthenticated: req.session.isLoggedIn,
 		})
 	} catch (error) {
 		console.log(error)
@@ -21,7 +22,12 @@ exports.getProduct = async (req, res, next) => {
 
 	try {
 		const product = await Product.findById(prodId)
-		res.render('shop/product-detail', { product: product, pageTitle: product.title, path: '/products' })
+		res.render('shop/product-detail', {
+			product: product,
+			pageTitle: product.title,
+			path: '/products',
+			isAuthenticated: req.session.isLoggedIn,
+		})
 	} catch (error) {
 		console.log(error)
 	}
@@ -34,6 +40,7 @@ exports.getIndex = async (req, res, next) => {
 			prods: products,
 			pageTitle: 'Shop',
 			path: '/',
+			isAuthenticated: req.session.isLoggedIn,
 		})
 	} catch (error) {
 		console.log(error)
@@ -48,6 +55,7 @@ exports.getCart = async (req, res, next) => {
 			path: '/cart',
 			pageTitle: 'Your Cart',
 			products: cart,
+			isAuthenticated: req.session.isLoggedIn,
 		})
 	} catch (error) {
 		console.log(error)
@@ -58,8 +66,8 @@ exports.postCart = async (req, res, next) => {
 
 	try {
 		const product = await Product.findById(prodId)
-		await req.user.addToCart(product)
 		res.redirect('/cart')
+		return await req.user.addToCart(product)
 	} catch (err) {
 		console.log(err)
 	}
@@ -84,7 +92,7 @@ exports.postOrder = async (req, res, next) => {
 		const order = new Order({
 			user: {
 				name: req.user.name,
-				userId: req.user,
+				userId: req.session.user,
 			},
 			products: cart,
 		})
@@ -97,11 +105,12 @@ exports.postOrder = async (req, res, next) => {
 }
 exports.getOrders = async (req, res, next) => {
 	try {
-		const orders = await Order.find({'user.userId': req.user._id})
+		const orders = await Order.find({ 'user.userId': req.user._id })
 		res.render('shop/orders', {
 			path: '/orders',
 			pageTitle: 'Your Orders',
 			orders,
+			isAuthenticated: req.session.isLoggedIn,
 		})
 	} catch (error) {
 		console.log(error)
