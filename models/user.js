@@ -5,14 +5,16 @@ const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 
 const userSchema = new Schema({
-	name: {
-		type: String,
-		require: true,
-	},
 	email: {
 		type: String,
 		require: true,
 	},
+	password: {
+		type: String,
+		require: true,
+	},
+	resetToken: String,
+	resetTokenExpiration: Date,
 	cart: {
 		items: [
 			{
@@ -43,13 +45,13 @@ userSchema.methods.addToCart = async function (product) {
 
 userSchema.methods.removeFromCart = function (prodId) {
 	const updatedCartItems = this.cart.items.filter(i => i.productId.toString() !== prodId.toString())
-    this.cart.items = updatedCartItems
-    return this.save()
+	this.cart.items = updatedCartItems
+	return this.save()
 }
 
 userSchema.methods.clearCart = function () {
-    this.cart = { items: []}
-    return this.save()
+	this.cart = { items: [] }
+	return this.save()
 }
 
 module.exports = mongoose.model('Users', userSchema)

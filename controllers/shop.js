@@ -10,7 +10,6 @@ exports.getProducts = async (req, res, next) => {
 			prods: products,
 			pageTitle: 'All Products',
 			path: '/products',
-			isAuthenticated: req.session.isLoggedIn,
 		})
 	} catch (error) {
 		console.log(error)
@@ -26,7 +25,6 @@ exports.getProduct = async (req, res, next) => {
 			product: product,
 			pageTitle: product.title,
 			path: '/products',
-			isAuthenticated: req.session.isLoggedIn,
 		})
 	} catch (error) {
 		console.log(error)
@@ -40,7 +38,6 @@ exports.getIndex = async (req, res, next) => {
 			prods: products,
 			pageTitle: 'Shop',
 			path: '/',
-			isAuthenticated: req.session.isLoggedIn,
 		})
 	} catch (error) {
 		console.log(error)
@@ -55,7 +52,6 @@ exports.getCart = async (req, res, next) => {
 			path: '/cart',
 			pageTitle: 'Your Cart',
 			products: cart,
-			isAuthenticated: req.session.isLoggedIn,
 		})
 	} catch (error) {
 		console.log(error)
@@ -88,11 +84,10 @@ exports.postOrder = async (req, res, next) => {
 		const cart = user.cart.items.map(i => {
 			return { quantity: i.quantity, productData: { ...i.productId._doc } }
 		})
-		console.log(cart)
 		const order = new Order({
 			user: {
-				name: req.user.name,
-				userId: req.session.user,
+				email: req.user.email,
+				userId: req.user._id,
 			},
 			products: cart,
 		})
@@ -110,7 +105,6 @@ exports.getOrders = async (req, res, next) => {
 			path: '/orders',
 			pageTitle: 'Your Orders',
 			orders,
-			isAuthenticated: req.session.isLoggedIn,
 		})
 	} catch (error) {
 		console.log(error)
