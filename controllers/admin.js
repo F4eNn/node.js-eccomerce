@@ -1,12 +1,18 @@
 /** @format */
 
+const { ValidationError } = require('sequelize')
 const Product = require('../models/product')
+const { validationResult } = require('express-validator')
 
 exports.getAddProduct = (req, res, next) => {
 	res.render('admin/edit-product', {
 		pageTitle: 'Add Product',
 		path: '/admin/add-product',
 		editing: false,
+		hasError: false,
+		errorMsg: null,
+		validationErrors: [],
+
 	})
 }
 exports.postAddProduct = async (req, res, next) => {
@@ -14,6 +20,19 @@ exports.postAddProduct = async (req, res, next) => {
 	const imageUrl = req.body.imageUrl
 	const price = req.body.price
 	const description = req.body.description
+	const errors = validationResult(req)
+	if (!errors.isEmpty()) {
+		return res.status(422).render('admin/edit-product', {
+			pageTitle: 'Add Product',
+			path: '/admin/edit-product',
+			editing: false,
+			hasError: true,
+			product: { title, imageUrl, price, description },
+			errorMsg: errors.array()[0].msg,
+			validationErrors: errors.array()
+
+		})
+	}
 	const product = new Product({ title, price, description, imageUrl, userId: req.user })
 	try {
 		await product.save()
@@ -38,6 +57,10 @@ exports.getEditProduct = async (req, res, next) => {
 			path: '/admin/edit-product',
 			editing: editMode,
 			product,
+			hasError: false,
+			errorMsg: null,
+			validationErrors: []
+
 		})
 	} catch (error) {
 		console.log(error)
@@ -50,8 +73,25 @@ exports.postEditProduct = async (req, res, next) => {
 	const updatedPrice = req.body.price
 	const updatedImageUrl = req.body.imageUrl
 	const updatedDescription = req.body.description
+
+	const errors = validationResult(req)
+	if (!errors.isEmpty()) {
+		return res.status(422).render('admin/edit-product', {
+			pageTitle: 'Edit Product',
+			path: '/admin/edit-product',
+			editing: true,
+			hasError: true,
+			product: { title: updatedTitle, imageUrl: updatedImageUrl, price: updatedPrice, description: updatedDescription },
+			errorMsg: errors.array()[0].msg,
+			validationErrors: errors.array(),
+			_id: prodId
+		})
+	}
 	try {
 		const newProduct = await Product.findById(prodId)
+		if (newProduct.userId.toString() !== req.user._id.toString()) {
+			return res.redirect('/')
+		}
 		newProduct.title = updatedTitle
 		newProduct.price = updatedPrice
 		newProduct.imageUrl = updatedImageUrl
@@ -64,7 +104,7 @@ exports.postEditProduct = async (req, res, next) => {
 }
 exports.getProducts = async (req, res, next) => {
 	try {
-		const products = await Product.find()
+		const products = await Product.find({ userId: req.user._id })
 		res.render('admin/products', {
 			prods: products,
 			pageTitle: 'Admin Products',
@@ -77,7 +117,7 @@ exports.getProducts = async (req, res, next) => {
 exports.postDeleteProduct = async (req, res, next) => {
 	const prodId = req.body.productId
 	try {
-		await Product.findByIdAndRemove(prodId)
+		await Product.deleteOne({ _id: prodId, userId: req.user._id })
 		res.redirect('/admin/products')
 	} catch (error) {
 		console.log(error)
