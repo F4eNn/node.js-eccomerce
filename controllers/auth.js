@@ -89,9 +89,10 @@ exports.postLogin = async (req, res, next) => {
 			},
 			validationErrors: []
 		})
-	} catch (error) {
-		console.log(error)
-		res.redirect('/login')
+	} catch (err) {
+		const error = new Error(err)
+		error.httpStatusCode = 500
+		return next(error)
 	}
 }
 
@@ -139,8 +140,10 @@ exports.postSignup = async (req, res, next) => {
 			subject: "Hello Mati",
 			html: "<b>testowa wiadomosc, działa</b>",
 		});
-	} catch (error) {
-		console.log(error);
+	} catch (err) {
+		const error = new Error(err)
+		error.httpStatusCode = 500
+		return next(error)
 	}
 }
 
@@ -194,8 +197,10 @@ exports.postReset = (req, res, next) => {
 				`,
 			});
 		})
-	} catch (error) {
-		console.log(error);
+	} catch (err) {
+		const error = new Error(err)
+		error.httpStatusCode = 500
+		return next(error)
 	}
 }
 exports.getNewPassword = async (req, res, next) => {
@@ -219,8 +224,10 @@ exports.getNewPassword = async (req, res, next) => {
 			passwordToken: token
 		})
 
-	} catch (error) {
-		console.log(error);
+	} catch (err) {
+		const error = new Error(err)
+		error.httpStatusCode = 500
+		return next(error)
 	}
 }
 
@@ -239,8 +246,10 @@ exports.postNewPassword = async (req, res, next) => {
 		await user.save()
 		res.redirect('/login')
 
-	} catch (error) {
-		console.log(error);
+	} catch (err) {
+		const error = new Error(err)
+		error.httpStatusCode = 500
+		return next(error)
 	}
 
 
